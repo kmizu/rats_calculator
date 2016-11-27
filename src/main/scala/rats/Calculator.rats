@@ -1,0 +1,63 @@
+module com.github.kmizu.rats_calculator.Calculator;
+
+header {
+  import java.util.List;
+
+  class Tuple<T1, T2> {
+    public final T1 t1;
+    public final T2 t2;
+    Tuple(T1 t1, T2 t2) {
+      this.t1 = t1;
+      this.t2 = t2;
+    }
+    static <T1, T2> Tuple<T1, T2> make(T1 t1, T2 t2) {
+      return new Tuple<T1, T2>(t1, t2);
+    }
+  }
+  class C {
+    static Integer calculate(Integer lhs, List<Tuple<String, Integer>> rhs) {
+      Integer result = lhs;
+      for(Tuple<String, Integer> r:rhs) {
+        switch(r.t1) {
+          case "+":
+            result = result + r.t2;
+            break;
+          case "-":
+            result = result - r.t2;
+            break;
+          case "*":
+            result = result * r.t2;
+            break;
+          case "/":
+            result = result / r.t2;
+            break;
+          default:
+            throw new RuntimeException("unreachable code");
+        }
+      }
+      return result;
+    }
+  }
+}
+
+public Integer program = S expression EOT;
+transient Integer expression = additive;
+transient Integer additive  = l:multitive rs:(additiveTail*) { yyValue = C.calculate(l, rs.list()); };
+transient Tuple<String, Integer> additiveTail = (
+  t1:PLUS t2:multitive { yyValue = Tuple.make(t1, t2); } / t1:PLUS t2:multitive { yyValue = Tuple.make(t1, t2); }
+);
+transient Integer multitive = l:primary rs:(multitiveTail*) { yyValue = C.calculate(l, rs.list()); };
+transient Tuple<String, Integer> multitiveTail = (
+  t1:ASTER t2:multitive { yyValue = Tuple.make(t1, t2); } / t1:SLASH t2:multitive { yyValue = Tuple.make(t1, t2); }
+);
+transient Integer primary = LPAREN expression RPAREN
+                / v:NUMBER { yyValue = Integer.parseInt(v); };
+void S = (" " / "\t" / "\r" / "\n")* ;
+void LPAREN = "(" S;
+void RPAREN = ")" S;
+String PLUS = "+" S;
+String MINUS = "-" S;
+String ASTER = "*" S;
+String SLASH = "/" S;
+String NUMBER = v:([0-9]+);
+void EOT = !_;

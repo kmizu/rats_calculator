@@ -1,5 +1,7 @@
 import SonatypeKeys._
 
+sbtRatsSettings
+
 sonatypeSettings
 
 organization := "com.github.kmizu"
@@ -29,9 +31,14 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.0" % "test"
 )
 
+ratsMainModule := {
+  Some(sourceDirectory.value / "main" / "scala" / "rats" / "Calculator.rats")
+}
 
 initialCommands in console += {
-  Iterator().map("import "+).mkString("\n")
+  Iterator(
+    "com.github.kmizu.rats_calculator._"
+  ).map("import "+).mkString("\n")
 }
 
 pomExtra := (
